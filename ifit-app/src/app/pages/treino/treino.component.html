@@ -1,0 +1,17 @@
+<section class="max-w-5xl mx-auto mt-10 p-6">
+  <h2 class="text-3xl font-bold text-orange-600 mb-6">Treino para {{ nome }}</h2>
+
+  @for (dia of treino; track dia) {
+    <div class="mb-8">
+      <h3 class="text-xl font-semibold mb-3">Dia {{ treino.indexOf(dia) + 1 }} - {{ dia.parte }}</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (ex of dia.exercicios; track ex) {
+          <div class="bg-white rounded-lg border shadow p-4">
+            <h4 class="font-semibold text-gray-800">{{ ex.nome }}</h4>
+            <p class="text-sm text-gray-500">{{ ex.series }} séries de {{ ex.repeticoes }} repetições</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>
