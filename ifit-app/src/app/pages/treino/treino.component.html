@@ -1,110 +1,30 @@
-<div class="treino-container">
-  <h2>Seu Treino Personalizado</h2>
+<section class="max-w-4xl mx-auto p-6">
+  <h2 class="text-2xl font-bold text-orange-600 mb-6 text-center">
+    Treino Personalizado para {{ usuario()?.nome || nome }}
+  </h2>
 
-  <div *ngIf="usuario()">
-    <h3>Informações do Usuário:</h3>
-    <p><strong>Nome:</strong> {{ usuario()?.nome }}</p>
-    <p><strong>Email:</strong> {{ usuario()?.email }}</p>
-    <p *ngIf="usuario()?.peso"><strong>Peso:</strong> {{ usuario()?.peso }} kg</p>
-    <p *ngIf="usuario()?.altura"><strong>Altura:</strong> {{ usuario()?.altura }} cm</p>
-    <p *ngIf="usuario()?.objetivo"><strong>Objetivo:</strong> {{ usuario()?.objetivo | titlecase }}</p>
+  <div class="text-center text-gray-700 mb-6">
+    <p *ngIf="usuario()">Idade: {{ usuario()?.idade }} anos</p>
+    <p *ngIf="usuario()">Objetivo: {{ usuario()?.objetivo }}</p>
+    <p *ngIf="usuario()">Local de treino: {{ usuario()?.local }}</p>
+    <p *ngIf="usuario()">Nível: {{ usuario()?.nivel }}</p>
+    <p *ngIf="usuario()">Frequência semanal: {{ usuario()?.frequencia }}x</p>
   </div>
 
-  <div *ngIf="treinoGerado().length > 0">
-    <h3>Seu Plano de Exercícios:</h3>
-    <ul>
-      <li *ngFor="let exercicio of treinoGerado()">
-        <strong>{{ exercicio.nome }}</strong> ({{ exercicio.foco | titlecase }}) - {{ exercicio.nivel | titlecase }}
-        <p *ngIf="exercicio.instrucoes">{{ exercicio.instrucoes }}</p>
-      </li>
-    </ul>
+  <div *ngIf="treinoGerado().length > 0; else semTreino">
+    <div *ngFor="let dia of treinoGerado(); let i = index" class="mb-6">
+      <h3 class="text-xl font-semibold text-gray-700 mb-2">Dia {{ i + 1 }} – {{ dia.parte || 'Parte aleatória' }}</h3>
+      <ul class="space-y-2">
+        <li *ngFor="let ex of dia.exercicios" class="bg-white rounded shadow p-3 border">
+          <p class="font-medium">{{ ex.nome }}</p>
+          <p class="text-sm text-gray-600">Séries: {{ ex.series }}, Repetições: {{ ex.repeticoes }}</p>
+          <p *ngIf="ex.instrucoes" class="text-sm text-gray-600 italic">{{ ex.instrucoes }}</p>
+        </li>
+      </ul>
+    </div>
   </div>
 
-  <div *ngIf="!usuario() && treinoGerado().length === 0">
-    <p>Carregando seu perfil e treino...</p>
-  </div>
-
-  <div *ngIf="usuario() && treinoGerado().length === 0">
-    <p>Não foi possível gerar um treino com base nas suas informações ou não há exercícios disponíveis.</p>
-  </div>
-
-  <button class="back-button" routerLink="/">Voltar ao Início</button>
-</div>
-
-<style>
-  .treino-container {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-  }
-
-  .treino-container h2 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-    font-size: 2.2em;
-    font-weight: bold;
-  }
-
-  .treino-container h3 {
-    color: #007bff;
-    margin-top: 25px;
-    margin-bottom: 15px;
-    font-size: 1.6em;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 10px;
-  }
-
-  .treino-container p {
-    font-size: 1.1em;
-    line-height: 1.6;
-    color: #444;
-    margin-bottom: 8px;
-  }
-
-  .treino-container ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  .treino-container li {
-    background-color: #e9f7ff;
-    border: 1px solid #cce5ff;
-    margin-bottom: 15px;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
-
-  .treino-container li strong {
-    color: #0056b3;
-    font-size: 1.2em;
-    display: block;
-    margin-bottom: 5px;
-  }
-
-  .treino-container .back-button {
-    display: block;
-    width: fit-content;
-    margin: 30px auto 0;
-    padding: 12px 25px;
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1.1em;
-    font-weight: bold;
-    cursor: pointer;
-    text-decoration: none; /* Para routerLink */
-    transition: background-color 0.3s ease, transform 0.2s ease;
-  }
-
-  .treino-container .back-button:hover {
-    background-color: #5a6268;
-    transform: translateY(-2px);
-  }
-</style>
+  <ng-template #semTreino>
+    <p class="text-center text-gray-600 mt-10">Nenhum treino gerado ainda.</p>
+  </ng-template>
+</section>

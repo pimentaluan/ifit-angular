@@ -2,14 +2,17 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Defina uma interface para o tipo de dado que você espera
 export interface Usuario {
-  id?: string; // <-- Mude de 'number' para 'string'
+  id?: string;
   nome: string;
   email: string;
-  peso?: number;
-  altura?: number;
-  objetivo?: string;
+  idade: number;
+  objetivo: string;
+  frequencia: number;
+  nivel: string;
+  lesao: string;
+  local: string;
+  treino?: any[];
 }
 
 @Injectable({
@@ -18,20 +21,28 @@ export interface Usuario {
 export class UsuarioService {
   private apiUrl = 'http://localhost:3000/usuarios';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getUsuarios(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(this.apiUrl);
   }
 
-  // Se você tiver um método para buscar por ID, ele deve continuar funcionando
-  // pois o ID será uma string na URL
-  getUsuarioById(id: string): Observable<Usuario> { // <-- Altere o tipo do parâmetro para string
+  getUsuarioById(id: string): Observable<Usuario> {
     const url = `${this.apiUrl}/${id}`;
     return this.http.get<Usuario>(url);
   }
 
   criarUsuario(usuario: Usuario): Observable<Usuario> {
     return this.http.post<Usuario>(this.apiUrl, usuario);
+  }
+
+  atualizarUsuario(id: string, usuario: Usuario): Observable<Usuario> {
+    const url = `${this.apiUrl}/${id}`;
+    return this.http.put<Usuario>(url, usuario);
+  }
+
+  deletarUsuario(id: string): Observable<void> {
+    const url = `${this.apiUrl}/${id}`;
+    return this.http.delete<void>(url);
   }
 }

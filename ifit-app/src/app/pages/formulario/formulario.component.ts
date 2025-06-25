@@ -1,53 +1,122 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-formulario',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './formulario.component.html',
-  styleUrls: []
+  styleUrls: ['./formulario.component.css'],
 })
-export class FormularioComponent {
+export class FormularioComponent implements OnInit {
   router = inject(Router);
   usuarioService = inject(UsuarioService);
+  http = inject(HttpClient);
 
-  novoUsuario: Usuario = {
-    nome: '',
-    email: '',
-    peso: undefined,
-    altura: undefined,
-    objetivo: ''
-  };
-
+  todosExercicios: any = {};
   mensagemSucesso: string | null = null;
   mensagemErro: string | null = null;
 
-  onSubmit() {
+  form: Usuario & {
+    idade?: number;
+    frequencia?: number;
+    nivel?: string;
+    lesao?: string;
+    local?: string;
+    treino?: any[];
+  } = {
+    nome: '',
+    email: '',
+    objetivo: '',
+    idade: 0,
+    frequencia: 3,
+    nivel: '',
+    lesao: '',
+    local: '',
+    treino: []
+  };
+
+  ngOnInit(): void {
+    this.http.get('http://localhost:3000/exercicios').subscribe({
+      next: (data) => this.todosExercicios = data,
+      error: () => this.mensagemErro = 'Erro ao carregar exercícios.'
+    });
+  }
+
+  gerarTreino(formRef: NgForm) {
     this.mensagemSucesso = null;
     this.mensagemErro = null;
 
-    if (!this.novoUsuario.nome || !this.novoUsuario.email) {
-      this.mensagemErro = 'Nome e email são obrigatórios.';
+    if (formRef.invalid || this.form.idade! < 16 || this.form.idade! > 120) {
+      this.mensagemErro = 'Verifique os dados preenchidos.';
       return;
     }
 
-    this.usuarioService.criarUsuario(this.novoUsuario).subscribe({
-      next: (response) => {
-        console.log('Usuário criado com sucesso:', response);
-        // --- ADICIONE ESTA LINHA PARA DEPURAR O ID ---
-        console.log('ID do usuário retornado pelo servidor:', response.id);
-        // --- FIM DA LINHA DE DEPURACAO ---
-        this.mensagemSucesso = 'Usuário cadastrado com sucesso! Gerando seu treino...';
-        this.router.navigate(['/treino', response.id]);
+    const treinoGerado = this.montarTreino();
+    this.form.treino = treinoGerado;
+
+    this.usuarioService.criarUsuario(this.form).subscribe({
+      next: (res) => {
+        this.mensagemSucesso = 'Usuário cadastrado! Redirecionando...';
+        this.router.navigate(['/treino', res.id]);
       },
-      error: (error) => {
-        console.error('Erro ao criar usuário:', error);
-        this.mensagemErro = 'Erro ao cadastrar usuário. Tente novamente.';
+      error: () => {
+        this.mensagemErro = 'Erro ao cadastrar usuário.';
       }
     });
+  }
+
+  montarTreino() {
+    const dias = Number(this.form.frequencia);
+    const partes = ['Tórax', 'Costas', 'Pernas'];
+    const partesSelecionadas: string[] = [];
+
+    let i = 0;
+    while (partesSelecionadas.length < dias) {
+      const parte = partes[i % partes.length];
+      if (this.form.lesao?.toLowerCase() !== 'nenhuma' && parte === this.form.lesao) {
+        i++;
+        continue;
+      }
+      partesSelecionadas.push(parte);
+      i++;
+    }
+
+    const objetivo = this.form.objetivo?.toLowerCase();
+    const local = this.form.local?.toLowerCase();
+
+    const treinos = partesSelecionadas.map(parte => {
+      const lista = this.todosExercicios[parte]?.filter((ex: any) =>
+        ex.objetivo.toLowerCase() === objetivo &&
+        (local === 'academia' || ex.local.toLowerCase() === local)
+      ) || [];
+
+      const selecionados = this.sortearExercicios(lista, 5 + Math.floor(Math.random() * 3));
+
+      // Salvar apenas os IDs dos exercícios
+      return {
+        parte,
+        exercicios: selecionados.map((ex: any) => ex.id)
+      };
+    });
+
+    return treinos;
+  }
+
+  sortearExercicios(lista: any[], qtd: number) {
+    const copia = [...lista];
+    const resultado = [];
+
+    while (resultado.length < qtd && copia.length > 0) {
+      const i = Math.floor(Math.random() * copia.length);
+      resultado.push(copia[i]);
+      copia.splice(i, 1);
+    }
+
+    return resultado;
   }
 }
