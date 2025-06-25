@@ -1,95 +1,53 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm } from '@angular/forms';
-import exercicios from '../data/exercicios.json';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { UsuarioService, Usuario } from '../../services/usuario.service';
 
 @Component({
   selector: 'app-formulario',
   standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './formulario.component.html',
-  styleUrls: ['./formulario.component.css'],
-  imports: [CommonModule, FormsModule]
+  styleUrls: []
 })
 export class FormularioComponent {
-  form = {
+  router = inject(Router);
+  usuarioService = inject(UsuarioService);
+
+  novoUsuario: Usuario = {
     nome: '',
-    idade: 0,
-    objetivo: '',
-    frequencia: 3,
-    nivel: '',
-    lesao: '',
-    local: ''
+    email: '',
+    peso: undefined,
+    altura: undefined,
+    objetivo: ''
   };
 
-  constructor(private router: Router) {}
+  mensagemSucesso: string | null = null;
+  mensagemErro: string | null = null;
 
-  gerarTreino(formRef: NgForm) {
-    if (formRef.invalid || this.form.idade < 16 || this.form.idade > 150) {
+  onSubmit() {
+    this.mensagemSucesso = null;
+    this.mensagemErro = null;
+
+    if (!this.novoUsuario.nome || !this.novoUsuario.email) {
+      this.mensagemErro = 'Nome e email são obrigatórios.';
       return;
     }
 
-    const treinoGerado = this.montarTreino();
-    this.router.navigate(['/treino'], {
-      queryParams: {
-        nome: this.form.nome,
-        treino: JSON.stringify(treinoGerado)
+    this.usuarioService.criarUsuario(this.novoUsuario).subscribe({
+      next: (response) => {
+        console.log('Usuário criado com sucesso:', response);
+        // --- ADICIONE ESTA LINHA PARA DEPURAR O ID ---
+        console.log('ID do usuário retornado pelo servidor:', response.id);
+        // --- FIM DA LINHA DE DEPURACAO ---
+        this.mensagemSucesso = 'Usuário cadastrado com sucesso! Gerando seu treino...';
+        this.router.navigate(['/treino', response.id]);
+      },
+      error: (error) => {
+        console.error('Erro ao criar usuário:', error);
+        this.mensagemErro = 'Erro ao cadastrar usuário. Tente novamente.';
       }
     });
-  }
-
-  montarTreino() {
-    const dias = Number(this.form.frequencia);
-    const partes = [
-      'Tórax, Ombro ou Tríceps',
-      'Costas, Abdômen ou Bíceps',
-      'Parte Inferior, Pernas ou Glúteo'
-    ];
-    const partesSelecionadas: string[] = [];
-
-    let i = 0;
-    while (partesSelecionadas.length < dias) {
-      const parte = partes[i % partes.length];
-      if (this.form.lesao !== 'nenhuma' && parte === this.form.lesao) {
-        i++;
-        continue;
-      }
-      if (!partesSelecionadas.includes(parte)) {
-        partesSelecionadas.push(parte);
-      }
-      i++;
-    }
-
-    const objetivo = this.form.objetivo.toLowerCase();
-    const local = this.form.local.toLowerCase();
-
-    const treinos = partesSelecionadas.map(parte => {
-      const lista = (exercicios as any)[parte]?.filter((ex: any) =>
-        ex.objetivo.toLowerCase() === objetivo &&
-        (local === 'academia' || ex.local.toLowerCase() === local)
-      ) || [];
-
-      const selecionados = this.sortearExercicios(lista, 5 + Math.floor(Math.random() * 3));
-
-      return {
-        parte,
-        exercicios: selecionados
-      };
-    });
-
-    return treinos;
-  }
-
-  sortearExercicios(lista: any[], qtd: number) {
-    const copia = [...lista];
-    const resultado = [];
-
-    while (resultado.length < qtd && copia.length > 0) {
-      const i = Math.floor(Math.random() * copia.length);
-      resultado.push(copia[i]);
-      copia.splice(i, 1);
-    }
-
-    return resultado;
   }
 }

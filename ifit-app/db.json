@@ -1,0 +1,89 @@
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "nome": "Ana Silva",
+      "email": "ana@example.com",
+      "peso": 60,
+      "altura": 165,
+      "objetivo": "ganho de massa"
+    },
+    {
+      "id": 2,
+      "nome": "Bruno Costa",
+      "email": "bruno@example.com",
+      "peso": 80,
+      "altura": 180,
+      "objetivo": "perda de peso"
+    },
+    {
+      "id": "f300",
+      "nome": "jonata nascimento barbosa",
+      "email": "airjordan10.jn@gmail.com",
+      "peso": 70,
+      "altura": 192,
+      "objetivo": "ganho de massa"
+    },
+    {
+      "id": "119d",
+      "nome": "jonata nascimento barbosa",
+      "email": "airjordan10.jn@gmail.com",
+      "peso": 90,
+      "altura": 182,
+      "objetivo": "perda de peso"
+    },
+    {
+      "id": "734a",
+      "nome": "maira",
+      "email": "jonata10.jn@gmail.com",
+      "peso": 15,
+      "altura": 190,
+      "objetivo": "ganho de massa"
+    },
+    {
+      "id": "91c8",
+      "nome": "jonata nascimento barbosa",
+      "email": "airjordan10.jn@gmail.com",
+      "peso": 100,
+      "altura": 190,
+      "objetivo": "perda de peso"
+    },
+    {
+      "id": "d2d9",
+      "nome": "jonata nascimento barbosa",
+      "email": "airjordan10.jn@gmail.com",
+      "peso": 80,
+      "altura": 192,
+      "objetivo": "perda de peso"
+    },
+    {
+      "id": "483a",
+      "nome": "luanzinhooooo",
+      "email": "airjordan10.jn@gmail.com",
+      "peso": 70,
+      "altura": 175,
+      "objetivo": "condicionamento"
+    }
+  ],
+  "planos": [
+    {
+      "id": 1,
+      "nome": "Plano Essencial",
+      "preco": 49.99,
+      "recursos": [
+        "Acesso à academia",
+        "Acompanhamento online"
+      ]
+    },
+    {
+      "id": 2,
+      "nome": "Plano Premium",
+      "preco": 79.99,
+      "recursos": [
+        "Acesso à academia",
+        "Acompanhamento online",
+        "Personal Trainer 2x/semana"
+      ]
+    }
+  ]
+}

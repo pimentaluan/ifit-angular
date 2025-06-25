@@ -1,17 +1,110 @@
-<section class="max-w-5xl mx-auto mt-10 p-6">
-  <h2 class="text-3xl font-bold text-orange-600 mb-6">Treino para {{ nome }}</h2>
+<div class="treino-container">
+  <h2>Seu Treino Personalizado</h2>
 
-  @for (dia of treino; track dia) {
-    <div class="mb-8">
-      <h3 class="text-xl font-semibold mb-3">Dia {{ treino.indexOf(dia) + 1 }} - {{ dia.parte }}</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @for (ex of dia.exercicios; track ex) {
-          <div class="bg-white rounded-lg border shadow p-4">
-            <h4 class="font-semibold text-gray-800">{{ ex.nome }}</h4>
-            <p class="text-sm text-gray-500">{{ ex.series }} séries de {{ ex.repeticoes }} repetições</p>
-          </div>
-        }
-      </div>
-    </div>
+  <div *ngIf="usuario()">
+    <h3>Informações do Usuário:</h3>
+    <p><strong>Nome:</strong> {{ usuario()?.nome }}</p>
+    <p><strong>Email:</strong> {{ usuario()?.email }}</p>
+    <p *ngIf="usuario()?.peso"><strong>Peso:</strong> {{ usuario()?.peso }} kg</p>
+    <p *ngIf="usuario()?.altura"><strong>Altura:</strong> {{ usuario()?.altura }} cm</p>
+    <p *ngIf="usuario()?.objetivo"><strong>Objetivo:</strong> {{ usuario()?.objetivo | titlecase }}</p>
+  </div>
+
+  <div *ngIf="treinoGerado().length > 0">
+    <h3>Seu Plano de Exercícios:</h3>
+    <ul>
+      <li *ngFor="let exercicio of treinoGerado()">
+        <strong>{{ exercicio.nome }}</strong> ({{ exercicio.foco | titlecase }}) - {{ exercicio.nivel | titlecase }}
+        <p *ngIf="exercicio.instrucoes">{{ exercicio.instrucoes }}</p>
+      </li>
+    </ul>
+  </div>
+
+  <div *ngIf="!usuario() && treinoGerado().length === 0">
+    <p>Carregando seu perfil e treino...</p>
+  </div>
+
+  <div *ngIf="usuario() && treinoGerado().length === 0">
+    <p>Não foi possível gerar um treino com base nas suas informações ou não há exercícios disponíveis.</p>
+  </div>
+
+  <button class="back-button" routerLink="/">Voltar ao Início</button>
+</div>
+
+<style>
+  .treino-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
   }
-</section>
+
+  .treino-container h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 2.2em;
+    font-weight: bold;
+  }
+
+  .treino-container h3 {
+    color: #007bff;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-size: 1.6em;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+  }
+
+  .treino-container p {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #444;
+    margin-bottom: 8px;
+  }
+
+  .treino-container ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .treino-container li {
+    background-color: #e9f7ff;
+    border: 1px solid #cce5ff;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .treino-container li strong {
+    color: #0056b3;
+    font-size: 1.2em;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .treino-container .back-button {
+    display: block;
+    width: fit-content;
+    margin: 30px auto 0;
+    padding: 12px 25px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none; /* Para routerLink */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .treino-container .back-button:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+  }
+</style>
