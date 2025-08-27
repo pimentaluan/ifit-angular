@@ -1,9 +1,36 @@
 <header class="bg-white shadow-md">
-  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold text-orange-600">IFIT</h1>
-    <nav class="space-x-6 text-gray-700 font-medium">
-      <a routerLink="/" routerLinkActive="text-orange-600" class="hover:text-orange-600 transition">Início</a>
-      <a routerLink="/formulario" routerLinkActive="text-orange-600" class="hover:text-orange-600 transition">Monte seu treino</a>
+  <div class="container mx-auto px-4 py-3 flex items-center gap-6">
+    <a routerLink="/" class="text-2xl font-bold text-orange-600">IFit</a>
+
+    <nav class="flex-1 flex items-center gap-4 border-b pb-3">
+      <!-- grupo ESQUERDA -->
+      <div class="flex items-center gap-4">
+        <a routerLink="/" routerLinkActive="text-orange-600 font-semibold">Home</a>
+
+        <a *ngIf="auth.isLoggedIn()"
+           routerLink="/formulario"
+           routerLinkActive="text-orange-600 font-semibold">
+          Gerar treino
+        </a>
+
+        <a *ngIf="auth.isAdmin()"
+           routerLink="/treinos"
+           routerLinkActive="text-orange-600 font-semibold">
+          Treinos (admin)
+        </a>
+      </div>
+
+      <!-- grupo DIREITA -->
+      <div class="ml-auto flex items-center gap-3">
+        <ng-container *ngIf="!auth.isLoggedIn(); else logado">
+          <a routerLink="/login" routerLinkActive="text-orange-600 font-semibold">Login</a>
+          <a routerLink="/register" routerLinkActive="text-orange-600 font-semibold">Registrar</a>
+        </ng-container>
+
+        <ng-template #logado>
+          <button class="px-3 py-1 border rounded" (click)="auth.logout()">Sair</button>
+        </ng-template>
+      </div>
     </nav>
   </div>
 </header>

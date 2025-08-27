@@ -1,48 +1,52 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+
+export interface DiaTreino { parte: string; exercicios: number[]; }
 
 export interface Usuario {
-  id?: string;
+  id?: number;
   nome: string;
   email: string;
-  idade: number;
   objetivo: string;
-  frequencia: number;
-  nivel: string;
-  lesao: string;
-  local: string;
-  treino?: any[];
+  idade?: number;
+  frequencia?: number;
+  nivel?: string;
+  lesao?: string;
+  local?: string;
+  treino?: DiaTreino[];
+  genero?: string;
+  role?: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class UsuarioService {
-  private apiUrl = 'http://localhost:3000/usuarios';
+  private http = inject(HttpClient);
+  private base = environment.api;
 
-  constructor(private http: HttpClient) {}
-
-  getUsuarios(): Observable<Usuario[]> {
-    return this.http.get<Usuario[]>(this.apiUrl);
+  /** ADMIN: lista todos os usuários */
+  listar(): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${this.base}/usuarios`);
   }
 
-  getUsuarioById(id: string): Observable<Usuario> {
-    const url = `${this.apiUrl}/${id}`;
-    return this.http.get<Usuario>(url);
+  /** ADMIN: busca qualquer usuário por id */
+  buscarPorId(id: number): Observable<Usuario> {
+    return this.http.get<Usuario>(`${this.base}/usuarios/${id}`);
   }
 
-  criarUsuario(usuario: Usuario): Observable<Usuario> {
-    return this.http.post<Usuario>(this.apiUrl, usuario);
+  /** ADMIN: cria usuário (não use no formulário; formulário só atualiza treino do logado) */
+  criarUsuario(u: Partial<Usuario>): Observable<Usuario> {
+    return this.http.post<Usuario>(`${this.base}/usuarios`, u);
   }
 
-  atualizarUsuario(id: string, usuario: Usuario): Observable<Usuario> {
-    const url = `${this.apiUrl}/${id}`;
-    return this.http.put<Usuario>(url, usuario);
+  /** Logado: dados do próprio usuário */
+  me(): Observable<Usuario> {
+    return this.http.get<Usuario>(`${this.base}/me`);
   }
 
-  deletarUsuario(id: string): Observable<void> {
-    const url = `${this.apiUrl}/${id}`;
-    return this.http.delete<void>(url);
+  /** Logado: atualiza SOMENTE o treino do usuário logado */
+  atualizarMeuTreino(treino: DiaTreino[]): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.base}/me/treino`, treino);
   }
 }

@@ -1,9 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
-import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { UsuarioService, Usuario, DiaTreino } from '../../services/usuario.service';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-formulario',
@@ -13,24 +14,18 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./formulario.component.css'],
 })
 export class FormularioComponent implements OnInit {
-  router = inject(Router);
-  usuarioService = inject(UsuarioService);
-  http = inject(HttpClient);
+  private router = inject(Router);
+  private usuarioService = inject(UsuarioService);
+  private http = inject(HttpClient);
+  private platformId = inject(PLATFORM_ID);
 
   todosExercicios: any = {};
   mensagemSucesso: string | null = null;
   mensagemErro: string | null = null;
 
-  form: Usuario & {
-    idade?: number;
-    frequencia?: number;
-    nivel?: string;
-    lesao?: string;
-    local?: string;
-    treino?: any[];
-  } = {
-    nome: '',
-    email: '',
+  form: Partial<Usuario> = {
+    nome: '',          // mantive caso você queira exibir/usar, mas não é obrigatório para atualizar treino
+    email: '',         // idem
     objetivo: '',
     idade: 0,
     frequencia: 3,
@@ -40,10 +35,21 @@ export class FormularioComponent implements OnInit {
     treino: []
   };
 
-  ngOnInit(): void {
-    this.http.get('http://localhost:3000/exercicios').subscribe({
-      next: (data) => this.todosExercicios = data,
-      error: () => this.mensagemErro = 'Erro ao carregar exercícios.'
+  async ngOnInit(): Promise<void> {
+    // se não estiver no browser (SSR), não tentar redirecionar ou tocar em localStorage
+    if (isPlatformBrowser(this.platformId)) {
+      // checa se está logado: como o backend exige JWT, basta verificar se há token salvo (pelo seu AuthService/interceptor)
+      const token = localStorage.getItem('ifit.token');
+      if (!token) {
+        // manda para login e volta para o formulário após autenticar
+        this.router.navigate(['/login'], { queryParams: { redirect: '/formulario' } });
+        return;
+      }
+    }
+
+    this.http.get(`${environment.api}/exercicios`).subscribe({
+      next: (data) => (this.todosExercicios = data),
+      error: () => (this.mensagemErro = 'Erro ao carregar exercícios.')
     });
   }
 
@@ -51,72 +57,76 @@ export class FormularioComponent implements OnInit {
     this.mensagemSucesso = null;
     this.mensagemErro = null;
 
-    if (formRef.invalid || this.form.idade! < 16 || this.form.idade! > 120) {
+    const idade = this.form.idade ?? 0;
+    if (formRef.invalid || idade < 16 || idade > 120) {
       this.mensagemErro = 'Verifique os dados preenchidos.';
       return;
     }
 
-    const treinoGerado = this.montarTreino();
-    this.form.treino = treinoGerado;
-
-    this.usuarioService.criarUsuario(this.form).subscribe({
-      next: (res) => {
-        this.mensagemSucesso = 'Usuário cadastrado! Redirecionando...';
-        this.router.navigate(['/treino', res.id]);
+    const treino = this.montarTreino();
+    // **NOVO FLUXO**: atualiza treino do usuário logado
+    this.usuarioService.atualizarMeuTreino(treino).subscribe({
+      next: () => {
+        // depois busca /me pra pegar o id e navegar para /treino/:id
+        this.usuarioService.me().subscribe({
+          next: (me) => {
+            this.mensagemSucesso = 'Treino gerado!';
+            this.router.navigate(['/treino', me.id]);
+          },
+          error: () => {
+            // fallback: apenas manda pra home se por algum motivo /me falhar
+            this.router.navigate(['/']);
+          }
+        });
       },
-      error: () => {
-        this.mensagemErro = 'Erro ao cadastrar usuário.';
+      error: (err) => {
+        console.error('PUT /me/treino falhou:', err);
+        this.mensagemErro = `Erro ao salvar treino (status ${err?.status ?? '??'})`;
       }
     });
   }
 
-  montarTreino() {
-    const dias = Number(this.form.frequencia);
+  montarTreino(): DiaTreino[] {
+    const dias = Number(this.form.frequencia ?? 0);
     const partes = ['Tórax', 'Costas', 'Pernas'];
     const partesSelecionadas: string[] = [];
 
     let i = 0;
     while (partesSelecionadas.length < dias) {
       const parte = partes[i % partes.length];
-      if (this.form.lesao?.toLowerCase() !== 'nenhuma' && parte === this.form.lesao) {
-        i++;
-        continue;
+
+      // se "lesao" for exatamente o nome da parte, pula; se for "nenhuma", não bloqueia nada
+      const lesao = (this.form.lesao ?? '').trim().toLowerCase();
+      if (lesao && lesao !== 'nenhuma' && parte.toLowerCase() === lesao) {
+        i++; continue;
       }
+
       partesSelecionadas.push(parte);
       i++;
     }
 
-    const objetivo = this.form.objetivo?.toLowerCase();
-    const local = this.form.local?.toLowerCase();
+    const objetivo = (this.form.objetivo ?? '').toLowerCase();
+    const local = (this.form.local ?? '').toLowerCase();
 
-    const treinos = partesSelecionadas.map(parte => {
+    return partesSelecionadas.map((parte) => {
       const lista = this.todosExercicios[parte]?.filter((ex: any) =>
-        ex.objetivo.toLowerCase() === objetivo &&
-        (local === 'academia' || ex.local.toLowerCase() === local)
+        ex.objetivo?.toLowerCase() === objetivo &&
+        (local === 'academia' || ex.local?.toLowerCase() === local)
       ) || [];
 
       const selecionados = this.sortearExercicios(lista, 5 + Math.floor(Math.random() * 3));
-
-      // Salvar apenas os IDs dos exercícios
-      return {
-        parte,
-        exercicios: selecionados.map((ex: any) => ex.id)
-      };
+      return { parte, exercicios: selecionados.map((ex: any) => ex.id) };
     });
-
-    return treinos;
   }
 
-  sortearExercicios(lista: any[], qtd: number) {
+  private sortearExercicios(lista: any[], qtd: number) {
     const copia = [...lista];
-    const resultado = [];
-
+    const resultado: any[] = [];
     while (resultado.length < qtd && copia.length > 0) {
-      const i = Math.floor(Math.random() * copia.length);
-      resultado.push(copia[i]);
-      copia.splice(i, 1);
+      const idx = Math.floor(Math.random() * copia.length);
+      resultado.push(copia[idx]);
+      copia.splice(idx, 1);
     }
-
     return resultado;
   }
 }
