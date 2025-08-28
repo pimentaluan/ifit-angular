@@ -1,52 +1,64 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
-
-export interface DiaTreino { parte: string; exercicios: number[]; }
 
 export interface Usuario {
   id?: number;
   nome: string;
   email: string;
+  idade: number;
   objetivo: string;
-  idade?: number;
-  frequencia?: number;
-  nivel?: string;
-  lesao?: string;
-  local?: string;
-  treino?: DiaTreino[];
-  genero?: string;
-  role?: string;
+  frequencia: number;
+  nivel: string;
+  lesao: string;
+  local: string;
+}
+
+export interface Treino {
+  id?: number;
+  parte: string;
+  exerciciosJson: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
-  private http = inject(HttpClient);
-  private base = environment.api;
+  private baseUsuarios = 'http://localhost:8080/usuarios';
+  private baseTreinos = 'http://localhost:8080/treinos';
 
-  /** ADMIN: lista todos os usuários */
-  listar(): Observable<Usuario[]> {
-    return this.http.get<Usuario[]>(`${this.base}/usuarios`);
+  constructor(private http: HttpClient) {}
+
+  // -------- Usuários --------
+  criarUsuario(u: Usuario): Observable<Usuario> {
+    return this.http.post<Usuario>(this.baseUsuarios, u);
   }
 
-  /** ADMIN: busca qualquer usuário por id */
-  buscarPorId(id: number): Observable<Usuario> {
-    return this.http.get<Usuario>(`${this.base}/usuarios/${id}`);
+  listarUsuarios(): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(this.baseUsuarios);
   }
 
-  /** ADMIN: cria usuário (não use no formulário; formulário só atualiza treino do logado) */
-  criarUsuario(u: Partial<Usuario>): Observable<Usuario> {
-    return this.http.post<Usuario>(`${this.base}/usuarios`, u);
+  buscarUsuario(id: number): Observable<Usuario> {
+    return this.http.get<Usuario>(`${this.baseUsuarios}/${id}`);
   }
 
-  /** Logado: dados do próprio usuário */
-  me(): Observable<Usuario> {
-    return this.http.get<Usuario>(`${this.base}/me`);
+  deletarUsuario(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUsuarios}/${id}`);
   }
 
-  /** Logado: atualiza SOMENTE o treino do usuário logado */
-  atualizarMeuTreino(treino: DiaTreino[]): Observable<Usuario> {
-    return this.http.put<Usuario>(`${this.base}/me/treino`, treino);
+  // -------- Treinos --------
+  getTreinosUsuario(usuarioId: number): Observable<Treino[]> {
+    return this.http.get<Treino[]>(`${this.baseTreinos}/${usuarioId}`);
   }
+
+  buscarTreino(treinoId: number): Observable<Treino> {
+    return this.http.get<Treino>(`${this.baseTreinos}/detalhe/${treinoId}`);
+  }
+
+  criarTreino(usuarioId: number, treino: Treino): Observable<Treino> {
+    return this.http.post<Treino>(`${this.baseTreinos}/${usuarioId}`, treino);
+  }
+  deletarTreino(treinoId: number) {
+    return this.http.delete<void>(`http://localhost:8080/treinos/delete/${treinoId}`);
+  }
+
+
 }

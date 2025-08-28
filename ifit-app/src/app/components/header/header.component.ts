@@ -1,14 +1,11 @@
-import { Component, inject } from '@angular/core';
-import { NgIf } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [NgIf, RouterLink, RouterLinkActive],
+  imports: [RouterModule],
   templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css'],
 })
-export class HeaderComponent {
-  auth = inject(AuthService);
-}
+export class HeaderComponent {}

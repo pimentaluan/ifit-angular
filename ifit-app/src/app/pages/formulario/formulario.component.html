@@ -1,168 +1,69 @@
-<div class="max-w-2xl mx-auto p-4">
-  <h2 class="text-2xl font-bold mb-4">Gerar Treino</h2>
+<section class="max-w-3xl mx-auto bg-white p-6 mt-10 rounded shadow">
+  <h2 class="text-2xl font-bold text-orange-600 mb-4">Monte seu Treino Personalizado</h2>
 
-  <form #f="ngForm" (ngSubmit)="gerarTreino(f)" novalidate class="space-y-4">
+  <form #formRef="ngForm" (ngSubmit)="gerarTreino(formRef)" novalidate class="space-y-4">
 
-    <!-- Nome -->
-    <div>
-      <label class="block text-sm font-medium mb-1" for="nome">Nome</label>
-      <input
-        id="nome"
-        name="nome"
-        type="text"
-        class="w-full border rounded p-2"
-        [(ngModel)]="form.nome"
-        #nome="ngModel"
-        required
-      />
-      @if (nome.invalid && nome.touched) {
-        <div class="text-red-600 text-sm mt-1">Informe o nome.</div>
-      }
-    </div>
+    <!-- Usuário -->
+    <label class="block font-medium">Nome</label>
+    <input type="text" name="nome" [(ngModel)]="form.nome" required #nome="ngModel"
+           class="w-full border px-3 py-2 rounded" />
 
-    <!-- Email -->
-    <div>
-      <label class="block text-sm font-medium mb-1" for="email">Email</label>
-      <input
-        id="email"
-        name="email"
-        type="email"
-        class="w-full border rounded p-2"
-        [(ngModel)]="form.email"
-        #email="ngModel"
-        required
-        email
-      />
-      @if (email.invalid && email.touched) {
-        <div class="text-red-600 text-sm mt-1">Informe um e-mail válido.</div>
-      }
-    </div>
+    <label class="block font-medium">Email</label>
+    <input type="email" name="email" [(ngModel)]="form.email" required email #email="ngModel"
+           class="w-full border px-3 py-2 rounded" />
 
-    <!-- Objetivo -->
-    <div>
-      <label class="block text-sm font-medium mb-1" for="objetivo">Objetivo</label>
-      <select
-        id="objetivo"
-        name="objetivo"
-        class="w-full border rounded p-2"
-        [(ngModel)]="form.objetivo"
-        #objetivo="ngModel"
-        required
-      >
-        <option value="" disabled selected>Selecione</option>
-        <option value="hipertrofia">Hipertrofia</option>
-        <option value="resistência">Resistência</option>
-        <option value="emagrecimento">Emagrecimento</option>
-      </select>
-      @if (objetivo.invalid && objetivo.touched) {
-        <div class="text-red-600 text-sm mt-1">Selecione o objetivo.</div>
-      }
-    </div>
+    <label class="block font-medium">Idade</label>
+    <input type="number" name="idade" [(ngModel)]="form.idade" required #idade="ngModel"
+           class="w-full border px-3 py-2 rounded" />
 
-    <!-- Idade -->
-    <div>
-      <label class="block text-sm font-medium mb-1" for="idade">Idade</label>
-      <input
-        id="idade"
-        name="idade"
-        type="number"
-        class="w-full border rounded p-2"
-        [(ngModel)]="form.idade"
-        #idade="ngModel"
-        required
-        min="16"
-        max="120"
-      />
-      @if (((form.idade ?? 0) < 16) && idade.touched) {
-        <div class="text-red-600 text-sm mt-1">Idade mínima é 16.</div>
-      }
-      @if (((form.idade ?? 0) > 120) && idade.touched) {
-        <div class="text-red-600 text-sm mt-1">Idade máxima é 120.</div>
-      }
-    </div>
+    <!-- Treino -->
+    <label class="block font-medium">Objetivo</label>
+    <select name="objetivo" [(ngModel)]="form.objetivo" required #objetivo="ngModel"
+            class="w-full border px-3 py-2 rounded">
+      <option value="Criar massa muscular">Hipertrofia</option>
+      <option value="Emagrecer">Emagrecimento</option>
+      <option value="Melhorar a saúde">Saúde geral</option>
+    </select>
 
-    <!-- Frequência (dias/semana) -->
-    <div>
-      <label class="block text-sm font-medium mb-1" for="frequencia">Frequência (dias/semana)</label>
-      <input
-        id="frequencia"
-        name="frequencia"
-        type="number"
-        class="w-full border rounded p-2"
-        [(ngModel)]="form.frequencia"
-        #frequencia="ngModel"
-        required
-        min="1"
-        max="7"
-      />
-      @if (frequencia.invalid && frequencia.touched) {
-        <div class="text-red-600 text-sm mt-1">Informe um valor entre 1 e 7.</div>
-      }
-    </div>
+    <label class="block font-medium">Frequência semanal</label>
+    <select name="frequencia" [(ngModel)]="form.frequencia" required #frequencia="ngModel"
+            class="w-full border px-3 py-2 rounded">
+      <option value="2">2x</option>
+      <option value="3">3x</option>
+      <option value="5">5x</option>
+    </select>
 
-    <!-- Local -->
-    <div>
-      <label class="block text-sm font-medium mb-1" for="local">Local de treino</label>
-      <select
-        id="local"
-        name="local"
-        class="w-full border rounded p-2"
-        [(ngModel)]="form.local"
-        #local="ngModel"
-        required
-      >
-        <option value="" disabled selected>Selecione</option>
-        <option value="academia">Academia</option>
-        <option value="casa">Casa</option>
-      </select>
-      @if (local.invalid && local.touched) {
-        <div class="text-red-600 text-sm mt-1">Selecione o local.</div>
-      }
-    </div>
+    <label class="block font-medium">Nível</label>
+    <select name="nivel" [(ngModel)]="form.nivel" required #nivel="ngModel"
+            class="w-full border px-3 py-2 rounded">
+      <option value="iniciante">Iniciante</option>
+      <option value="intermediario">Intermediário</option>
+      <option value="avancado">Avançado</option>
+    </select>
 
-    <!-- Nível (opcional) -->
-    <div>
-      <label class="block text-sm font-medium mb-1" for="nivel">Nível (opcional)</label>
-      <select
-        id="nivel"
-        name="nivel"
-        class="w-full border rounded p-2"
-        [(ngModel)]="form.nivel"
-      >
-        <option value="">—</option>
-        <option value="iniciante">Iniciante</option>
-        <option value="intermediário">Intermediário</option>
-        <option value="avançado">Avançado</option>
-      </select>
-    </div>
+    <label class="block font-medium">Local de treino</label>
+    <select name="local" [(ngModel)]="form.local" required #local="ngModel"
+            class="w-full border px-3 py-2 rounded">
+      <option value="Academia">Academia</option>
+      <option value="Em casa">Em casa</option>
+    </select>
 
-    <!-- Lesão (opcional) -->
-    <div>
-      <label class="block text-sm font-medium mb-1" for="lesao">Lesão/Restrição (opcional)</label>
-      <input
-        id="lesao"
-        name="lesao"
-        type="text"
-        class="w-full border rounded p-2"
-        [(ngModel)]="form.lesao"
-        placeholder="Ex.: joelho, ombro, nenhuma"
-      />
-    </div>
+    <label class="block font-medium">Parte lesionada</label>
+    <select name="lesao" [(ngModel)]="form.lesao" required #lesao="ngModel"
+            class="w-full border px-3 py-2 rounded">
+      <option value="nenhuma">Nenhuma</option>
+      <option value="Tórax">Tórax</option>
+      <option value="Costas">Costas</option>
+      <option value="Pernas">Pernas</option>
+    </select>
 
-    <!-- Mensagens globais -->
-    @if (mensagemErro) {
-      <div class="text-red-700 font-semibold">{{ mensagemErro }}</div>
-    }
-    @if (mensagemSucesso) {
-      <div class="text-green-700 font-semibold">{{ mensagemSucesso }}</div>
-    }
-
-    <button
-      type="submit"
-      class="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
-      [disabled]="f.invalid"
-    >
+    <button type="submit"
+            [disabled]="formRef.invalid || idadeNum < 16 || idadeNum > 150"
+            class="bg-orange-600 text-white px-6 py-2 rounded w-full font-bold">
       Gerar Treino
     </button>
+
+    <p *ngIf="mensagemSucesso" class="text-green-600 mt-2">{{ mensagemSucesso }}</p>
+    <p *ngIf="mensagemErro" class="text-red-600 mt-2">{{ mensagemErro }}</p>
   </form>
-</div>
+</section>
